@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Estudiantil - 20 Registros</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; flex-direction: column; align-items: center; }
+        h2 { color: #2c3e50; margin-top: 20px; }
+        .bar { fill: #3498db; transition: fill 0.2s; }
+        .bar:hover { fill: #e74c3c; }
+        .axis-label { font-size: 10px; }
+        #tooltip {
+            position: absolute;
+            visibility: hidden;
+            background: white;
+            border: 1px solid #bdc3c7;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 12px;
+            z-index: 10;
+        }
+        .chart-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+
+    <h2>Rendimiento Académico: Top 20 Estudiantes</h2>
+    <div id="tooltip"></div>
+    <div class="chart-container">
+        <div id="chart"></div>
+    </div>
+
+    <script>
+        // 1. DATASET COMPLETO (20 REGISTROS)
+        const data = [
+            { "id_student": 214674675, "perfil": { "extracurricular": "Yes" }, "habitos": { "hours_studied": 7, "sleep_hours": 9, "papers_practiced": 1 }, "desempeno": { "previous_scores": 99, "performance_index": 91.0 } },
+            { "id_student": 214674676, "perfil": { "extracurricular": "Yes" }, "habitos": { "hours_studied": 2, "sleep_hours": 9, "papers_practiced": 5 }, "desempeno": { "previous_scores": 99, "performance_index": 76.0 } },
+            { "id_student": 214674677, "perfil": { "extracurricular": "Yes" }, "habitos": { "hours_studied": 1, "sleep_hours": 9, "papers_practiced": 8 }, "desempeno": { "previous_scores": 99, "performance_index": 77.0 } },
+            { "id_student": 214674678, "perfil": { "extracurricular": "Yes" }, "habitos": { "hours_studied": 1, "sleep_hours": 9, "papers_practiced": 3 }, "desempeno": { "previous_scores": 99, "performance_index": 75.0 } },
+            { "id_student": 214674679, "perfil": { "extracurricular": "Yes" }, "habitos": { "hours_studied": 7, "sleep_hours": 9, "papers_practiced": 3 }, "desempeno": { "previous_scores": 99, "performance_index": 92.0 } },
+            { "id_student": 214674680, "perfil": { "extracurricular": "No" }, "habitos": { "hours_studied": 3, "sleep_hours": 9, "papers_practiced": 0 }, "desempeno": { "previous_scores": 99, "performance_index": 78.0 } },
+            { "id_student": 214674681, "perfil": { "extracurricular": "No" }, "habitos": { "hours_studied": 1, "sleep_hours": 9, "papers_practiced": 7 }, "desempeno": { "previous_scores": 99, "performance_index": 74.0 } },
+            { "id_student": 214674682, "perfil": { "extracurricular": "No" }, "habitos": { "hours_studied": 6, "sleep_hours": 9, "papers_practiced": 4 }, "desempeno": { "previous_scores": 99, "performance_index": 90.0 } },
+            { "id_student": 214674683, "perfil": { "extracurricular": "No" }, "habitos": { "hours_studied": 1, "sleep_hours": 9, "papers_practiced": 9 }, "desempeno": { "previous_scores": 99, "performance_index": 79.0 } },
+            { "id_student": 214674684, "perfil": { "extracurricular": "No" }, "habitos": { "hours_studied": 5, "sleep_hours": 9, "papers_practiced": 0 }, "desempeno": { "previous_scores": 99, "performance_index": 87.0 } },
+            { "id_student": 214674685, "perfil": { "extracurricular": "No" }, "habitos": { "hours_studied": 8, "sleep_hours": 9, "papers_practiced": 6 }, "desempeno": { "previous_scores": 99, "performance_index": 98.0 } },
+            { "id_student": 214674686, "perfil": { "extracurricular": "Yes" }, "habitos": { "hours_studied": 1, "sleep_hours": 9, "papers_practiced": 2 }, "desempeno": { "previous_scores": 99, "performance_index": 76.0 } },
+            { "id_student": 214674687, "perfil": { "extracurricular": "No" }, "habitos": { "hours_studied": 4, "sleep_hours": 9, "papers_practiced": 1 }, "desempeno": { "previous_scores": 98, "performance_index": 82.0 } },
+            { "id_student": 214674688, "perfil": { "extracurricular": "No" }, "habitos": { "hours_studied": 1, "sleep_hours": 9, "papers_practiced": 2 }, "desempeno": { "previous_scores": 98, "performance_index": 71.0 } },
+            { "id_student": 214674689, "perfil": { "extracurricular": "No" }, "habitos": { "hours_studied": 7, "sleep_hours": 9, "papers_practiced": 2 }, "desempeno": { "previous_scores": 98, "performance_index": 89.0 } },
+            { "id_student": 214674690, "perfil": { "extracurricular": "No" }, "habitos": { "hours_studied": 3, "sleep_hours": 9, "papers_practiced": 2 }, "desempeno": { "previous_scores": 98, "performance_index": 78.0 } },
+            { "id_student": 214674691, "perfil": { "extracurricular": "No" }, "habitos": { "hours_studied": 5, "sleep_hours": 9, "papers_practiced": 9 }, "desempeno": { "previous_scores": 98, "performance_index": 89.0 } },
+            { "id_student": 214674692, "perfil": { "extracurricular": "No" }, "habitos": { "hours_studied": 4, "sleep_hours": 9, "papers_practiced": 5 }, "desempeno": { "previous_scores": 98, "performance_index": 85.0 } },
+            { "id_student": 214674693, "perfil": { "extracurricular": "No" }, "habitos": { "hours_studied": 3, "sleep_hours": 9, "papers_practiced": 2 }, "desempeno": { "previous_scores": 98, "performance_index": 78.0 } },
+            { "id_student": 214674694, "perfil": { "extracurricular": "Yes" }, "habitos": { "hours_studied": 6, "sleep_hours": 9, "papers_practiced": 7 }, "desempeno": { "previous_scores": 98, "performance_index": 92.0 } }
+        ];
+
+        // 2. CONFIGURACIÓN DEL SVG
+        const margin = {top: 20, right: 20, bottom: 70, left: 60},
+              width = 800 - margin.left - margin.right,
+              height = 400 - margin.top - margin.bottom;
+
+        const svg = d3.select("#chart")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // 3. ESCALAS
+        const x = d3.scaleBand()
+            .range([0, width])
+            .domain(data.map(d => d.id_student))
+            .padding(0.2);
+
+        const y = d3.scaleLinear()
+            .domain([0, 100])
+            .range([height, 0]);
+
+        // 4. EJES
+        svg.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .attr("transform", "translate(-10,0)rotate(-45)")
+            .style("text-anchor", "end");
+
+        svg.append("g").call(d3.axisLeft(y));
+
+        // 5. TOOLTIP
+        const tooltip = d3.select("#tooltip");
+
+        // 6. BARRAS
+        svg.selectAll("mybar")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("class", "bar")
+            .attr("x", d => x(d.id_student))
+            .attr("y", d => y(d.desempeno.performance_index))
+            .attr("width", x.bandwidth())
+            .attr("height", d => height - y(d.desempeno.performance_index))
+            .on("mouseover", (event, d) => {
+                tooltip.style("visibility", "visible")
+                    .html(`
+                        <strong>ID:</strong> ${d.id_student}<br/>
+                        <strong>Rendimiento:</strong> ${d.desempeno.performance_index}%<br/>
+                        <strong>Horas Estudio:</strong> ${d.habitos.hours_studied}h<br/>
+                        <strong>Horas Sueño:</strong> ${d.habitos.sleep_hours}h<br/>
+                        <strong>Extracurricular:</strong> ${d.perfil.extracurricular}
+                    `);
+            })
+            .on("mousemove", (event) => {
+                tooltip.style("top", (event.pageY - 10) + "px")
+                       .style("left", (event.pageX + 10) + "px");
+            })
+            .on("mouseout", () => {
+                tooltip.style("visibility", "hidden");
+            });
+
+    </script>
+</body>
+</html>

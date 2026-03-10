@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Académico Interactivo</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fc; }
+        .bar { fill: #4e73df; transition: fill 0.3s; }
+        .bar:hover { fill: #1cc88a; cursor: pointer; }
+        .axis-label { font-size: 12px; fill: #6e707e; }
+        
+        /* Estilo del Tooltip */
+        #tooltip {
+            position: absolute;
+            visibility: hidden;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #d1d3e2;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 13px;
+            line-height: 1.5;
+            pointer-events: none;
+        }
+        .tooltip-title { font-weight: bold; color: #4e73df; border-bottom: 1px solid #eee; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <h2 style="text-align: center; color: #5a5c69;">Análisis de Rendimiento y Hábitos</h2>
+    <div id="tooltip"></div>
+    <div id="chart" style="display: flex; justify-content: center;"></div>
+
+    <script>
+        // 1. DATASET ANIDADO (Relacionando nuestras 3 tablas)
+        const data = [
+            { "id": "214674675", "score": 91, "sleep": 9, "extra": "Yes" },
+            { "id": "214674676", "score": 76, "sleep": 9, "extra": "Yes" },
+            { "id": "214674677", "score": 77, "sleep": 9, "extra": "Yes" },
+            { "id": "214674678", "score": 75, "sleep": 9, "extra": "Yes" },
+            { "id": "214674679", "score": 92, "sleep": 9, "extra": "Yes" }
+        ];
+
+        const margin = {top: 40, right: 30, bottom: 60, left: 60},
+              width = 700 - margin.left - margin.right,
+              height = 400 - margin.top - margin.bottom;
+
+        const svg = d3.select("#chart")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Escalas
+        const x = d3.scaleBand().domain(data.map(d => d.id)).range([0, width]).padding(0.3);
+        const y = d3.scaleLinear().domain([0, 100]).range([height, 0]);
+
+        // Ejes
+        svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x));
+        svg.append("g").call(d3.axisLeft(y));
+
+        // Tooltip logic
+        const tooltip = d3.select("#tooltip");
+
+        // Barras con eventos
+        svg.selectAll(".bar")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("class", "bar")
+            .attr("x", d => x(d.id))
+            .attr("y", d => y(d.score))
+            .attr("width", x.bandwidth())
+            .attr("height", d => height - y(d.score))
+            .on("mouseover", function(event, d) {
+                tooltip.style("visibility", "visible")
+                       .html(`
+                            <div class="tooltip-title">Estudiante: ${d.id}</div>
+                            <b>Rendimiento:</b> ${d.score}%<br>
+                            <b>Horas Sueño:</b> ${d.sleep}h<br>
+                            <b>Extra:</b> ${d.extra}
+                       `);
+                d3.select(this).style("opacity", 0.8);
+            })
+            .on("mousemove", function(event) {
+                tooltip.style("top", (event.pageY - 10) + "px")
+                       .style("left", (event.pageX + 10) + "px");
+            })
+            .on("mouseout", function() {
+                tooltip.style("visibility", "hidden");
+                d3.select(this).style("opacity", 1);
+            });
+            
+    </script>
+</body>
+</html>
